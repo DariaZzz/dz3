@@ -187,7 +187,8 @@ def parse_dict(text):
                     my_var = re.findall(r'[_a-zA-Z]\w+', item)[0]
                     # dict_stack.append(my_var)
                     result[my_var] = parse_dict(item + ')')
-                    # new_item = re.findall(r'\s*dict\(\s*(.*?)\s*', item)
+                    if re.findall(r'\s*dict\(\s*(.*?)\s*', item)[0] != '':
+                        new_item = re.findall(r'\s*dict\(\s*(.*?)\s*', item)[0]
                     # string = re.findall(r'dict\(\s*(.*?)\s*', item)
                 else:
                     raise SyntaxError("Wrong name of var in dict")
