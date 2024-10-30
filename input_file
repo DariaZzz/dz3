@@ -1,0 +1,28 @@
+network {
+    ip_address = "192.168.0.10";
+    subnet_mask = "255.255.255.0";
+    gateway = "192.168.0.1";
+}
+users {
+    admin {
+        username = "admin";
+        password = "admin123";
+        roles = ["read", "write", "execute"];
+    }
+
+    guest {
+        username = "guest";
+        password = "guest123";
+        roles = ["read"];
+    }
+}
+application {
+    max_connections = 200;
+    timeout = 60; # В секундах
+    logging_enabled = true;
+
+    features {
+        monitoring = true;
+        notifications = false;
+    }
+}

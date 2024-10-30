@@ -1,0 +1,10 @@
+%{
+Это многострочный комментарий
+%}
+dict(
+    def item1 = 1,
+    def item2 = dict(
+        def subitem1 = 2,
+        def subitem2 = 3
+    )
+);
