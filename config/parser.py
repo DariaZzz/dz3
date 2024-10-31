@@ -144,6 +144,7 @@ def parse_config(config_text):
     config_text = remove_comments(config_text)
 
     config_text = parse(config_text)
+    return variables
     # Обработка определений переменных
     # parse_definition(config_text)
 
@@ -157,13 +158,14 @@ def parse(config_text):
             string += symbol
         if symbol == ';':
             if re.match(r'\s*def\s*', string):
-                parse_definition(string)
+                variables.update(parse_definition(string))
                 string = ''
         elif symbol == ')':
             if re.match(r'\s*dict\((.+?)\)', string):
-                parse_dict(string)
+                variables.update(dict(parse_dict(string)))
                 string = ''
-
+#
+# добавить в глобальный массив
 
 def remove_comments(text):
     # Удаляем однострочные комментарии
@@ -179,18 +181,20 @@ def parse_dict(text):
     result = {}
 
     for match in matches:
+        parse_dict()
         items = match.split(',')
+
         for item in items:
             new_item = item
             if re.match(r'(.*?)dict\(\s*(.*?)\s*', item):
-                if re.match(r'\s*[_a-zA-Z]\w+\s*=\s*dict\(\s*(.*?)\s*', item):
-                    my_var = re.findall(r'[_a-zA-Z]\w+', item)[0]
-                    # dict_stack.append(my_var)
-                    result[my_var] = parse_dict(item + ')')
-                    if re.findall(r'\s*dict\(\s*(.*?)\s*', item)[0] != '':
-                        new_item = re.findall(r'\s*dict\(\s*(.*?)\s*', item)[0]
+                 if re.match(r'\s*[_a-zA-Z]\w+\s*=\s*dict\(\s*(.*?)\s*', item):
+                    dict_stack.append(re.findall(r'[_a-zA-Z]\w+', item)[0])
+                    result[dict_stack.pop()] = parse_dict(item + ')')
+                    return result
+                    # if re.findall(r'\s*dict\(\s*(.*?)\s*', item)[0] != '':
+                    #     new_item = re.findall(r'\s*dict\(\s*(.*?)\s*', item)[0]
                     # string = re.findall(r'dict\(\s*(.*?)\s*', item)
-                else:
+                 else:
                     raise SyntaxError("Wrong name of var in dict")
                 # parse_dict(re.findall('\s*dict\(\s*(.*?)\s*', item))
             key_value = new_item.split('=')
@@ -226,7 +230,8 @@ def is_valid_variable_name(name):
 
 
 def parse_definition(definition):
-    global variables
+    # global variables
+    result = {}
     pattern1 = r'def\s+([_a-zA-Z]\w*)\s*=\s*(.+?);'
     # pattern2 = r'def\s+([_a-zA-Z]\w*)\s*=\s*(dict\()(.+)(\));'
     # pattern2 = r'def\s+([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*dict\((.+?)\);\s*'
@@ -237,8 +242,8 @@ def parse_definition(definition):
     for name, value in matches1:
         if not is_valid_variable_name(name.strip()):
             raise SyntaxError(f"Invalid variable name: {name.strip()}")
-        variables[name.strip()] = parse_value(value.strip())
-
+        result[name.strip()] = parse_value(value.strip())
+    return result
 
     # matches2 = re.findall(pattern2, definition)
     # for name, value in matches2:
@@ -275,7 +280,11 @@ def item1 = 1;
 dict(
     subitem1 = 2,
     subitem2 = dict(
-        inner_item = 3
+        inner_item = 3,
+        inner_item2 = 2,
+        inner_item3 = dict(
+            new_inner_item = -5
+        )
     )
 )
 """
