@@ -1,0 +1,12 @@
+def item1 = 1;
+def item2 = item1;
+dict(
+    subitem1 = 2,
+    subitem2 = dict(
+        inner_item = 3,
+        inner_item2 = 2,
+        inner_item3 = dict(
+            new_inner_item = -5
+        )
+    )
+)

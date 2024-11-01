@@ -1,6 +1,6 @@
 import argparse
 import yaml
-from parser import parse_config
+from parser import parse
 
 def main():
     parser = argparse.ArgumentParser(description="Convert custom config language to YAML.")
@@ -11,7 +11,7 @@ def main():
         config_text = file.read()
 
     try:
-        yaml_output = parse_config(config_text)
+        yaml_output = parse(config_text)
         print(yaml.dump(yaml_output, default_flow_style=False))
     except SyntaxError as e:
         print(f"Syntax error: {e}")
