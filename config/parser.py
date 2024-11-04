@@ -142,7 +142,8 @@ import re
 import re
 from importlib.resources import read_text
 
-variables = {}
+constants = {}
+variables = []
 service_words = ['dict(', ')', 'abs(', 'max(']
 dict_stack = []
 
@@ -163,9 +164,13 @@ def parse(config_text):
                 variables.update(parse_definition(string + symbol))
                 string = ''
         elif symbol == ')':
-            while symbol == ')' or symbol == '\n' or symbol == ' ':
-                string += symbol
-                symbol = config_text.read(1)
+            string += symbol
+            while symbol != '' and string.count('(') != string.count(')'):
+                try:
+                    symbol = config_text.read(1)
+                    string += symbol
+                except:
+                    raise SyntaxError("Не хватает закрывающихся скобок")
             if re.match(r'\s*dict\((.+?)\)', string + symbol, re.DOTALL):
                 variables.update(parse_dict(string))
                 string = ''
@@ -175,9 +180,10 @@ def parse(config_text):
 
 
 def parse_dict(text):
-    pattern1 = r'\s*dict\(\s*(.*?)\s*(\))+\s*'
+    matches = text.split(',')
+    pattern1 = r'\s*dict\((.*?)\)$'
     matches1 = re.findall(pattern1, text, re.DOTALL)
-    print(matches1)
+    print(matches)
     # pattern2 = r'([_a-zA-Z]\w*)'
     # matches2 = re.findall(pattern2, text, re.DOTALL)
     # pattern3 = r'def\s+([_a-zA-Z]\w*)\s*=\s*(.+?);'
@@ -186,7 +192,7 @@ def parse_dict(text):
     result = {}
 
     for match in matches1:
-        items = match.split('\n')
+        items = match.split(',\n')
 
         for item in items:
             if re.match(r'\s*([_a-zA-Z]\w*)\s*=\s*(.+?)',item):
@@ -229,8 +235,8 @@ def parse_value(value):
         else:
             raise SyntaxError(f"Undefined variable: {value}")
 
-    elif re.match(r'\s*dict\(\s*(.*?)\s*', value, re.DOTALL):
-        parse
+    elif re.match(r'\s*dict\(\s*(.*?)\s*\)', value, re.DOTALL):
+        parse_dict(value)
 
 
     raise SyntaxError(f"Invalid value: {value}")

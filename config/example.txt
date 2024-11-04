@@ -4,9 +4,13 @@ dict(
     subitem1 = 2,
     subitem2 = dict(
         inner_item = 3,
-        inner_item2 = 2,
-        inner_item3 = dict(
-            new_inner_item = -5
-        )
+        inner_item2 = dict(
+            new_inner_item = item2
+        ),
+        inner_item3 = 2,
+        inner_item4 = dict(
+            new_inner_item = item1
+        ),
     )
 )
+
