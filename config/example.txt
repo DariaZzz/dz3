@@ -1,3 +1,12 @@
+|| ааааааааааааа
+
+{%
+это
+вот
+многострочный
+
+комментарий %}
+
 def item1 = 1;
 def item2 = item1;
 dict(
@@ -5,12 +14,20 @@ dict(
     subitem2 = dict(
         inner_item = 3,
         inner_item2 = dict(
-            new_inner_item = item2
+            new_inner_item = -5
         ),
         inner_item3 = 2,
-        inner_item4 = dict(
-            new_inner_item = item1
-        ),
+        inner_item4 = -1
     )
 )
+
+dict(
+    my_var = 1,
+    my_var2 = dict(
+        this = 2
+    )
+)
+
+^[item1 item2 +]
+^[new_inner_item abs]
 
