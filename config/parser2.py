@@ -26,14 +26,16 @@ def parse(config_text):
                 dicts.append(dict({next(iter(new_def)): next(iter(new_def.values()))}))
                 variables.update(new_def)
                 string = ''
+            else:
+                raise SyntaxError(f"Неправильный формат определения в строке '{string}'")
         elif symbol == ')':
             string += symbol
             while symbol != '' and string.count('(') != string.count(')'):
-                try:
-                    symbol = config_text.read(1)
-                    string += symbol
-                except:
-                    raise SyntaxError("Не хватает закрывающихся скобок")
+                symbol = config_text.read(1)
+                string += symbol
+            if string.count('(') != string.count(')'):
+                raise SyntaxError("Не хватает закрывающихся скобок")
+
             if re.match(r'^\s*dict\(\s*(.+?)\s*\)$', string + symbol, re.DOTALL):
                 new_d = parse_dict(string)
                 dicts.append(new_d)
@@ -62,6 +64,10 @@ def parse(config_text):
             for comm in list_of_comments:
                 comments.append(comm)
             string = ''
+        elif '%}' in string and '{%' not in string:
+            raise SyntaxError("Комментарий не открыт")
+        elif symbol == '\n' and re.match(r'^\s*def\s*(.*?)\s*=\s*(.*?)\s*$', string, re.DOTALL):
+            raise SyntaxError(f"Не хватает ';' в строке '{string}'")
         else:
             string += symbol
     return variables, dicts
@@ -81,19 +87,19 @@ def parse_dict(text):
     while config_text != '':
         symbol = config_text[0]
         config_text = config_text[1:]
-        if symbol == ',' or config_text == '' and string.count('dict') == 0:
-            if 'this' in string:
+        if string != '' and (symbol == ',' or config_text == '') and string.count('dict') == 0:
+            if string.count('subitem1') != 0:
                 print()
             if symbol != ',':
                 string += symbol
-            if string.count('dict') == 0 and re.match(r'\s*(.+?)\s*=\s*(.+?)', string, re.DOTALL):
+            if re.match(r'\s*(.+?)\s*=\s*(.+?)\s*', string, re.DOTALL):
                 new_var = parse_assignment(string)
                 result.update(new_var)
                 variables.update(new_var)
                 string = ''
-            elif symbol == ',':
+            elif symbol != ',':
                 string += symbol
-        elif symbol == ')' or config_text == '':
+        elif string != '' and (symbol == ')' or config_text == '') and string.count('dict') != 0:
             string += symbol
             while config_text != '' and string.count('(') != string.count(')'):
                 try:
@@ -103,13 +109,27 @@ def parse_dict(text):
                 except:
                     print(string)
                     raise SyntaxError("Не хватает закрывающихся скобок")
+
             if re.match(r'\s*(.+?)\s*=\s*dict\((.+?)\)$', string, re.DOTALL):
                 name = re.findall(r'[a-zA-Z_]\w+', string, re.DOTALL)[0]
                 new_dict = re.findall(r'\s*[a-zA-Z_]\w+\s*=\s*(.+?)$', string, re.DOTALL)[0]
                 parsed_dict = parse_dict(new_dict)
                 variables[name] = parsed_dict
                 result[name] = parsed_dict
+
+                check_string = ''
+
+                while config_text != '' and symbol != '\n':
+                        symbol = config_text[0]
+                        config_text = config_text[1:]
+                        check_string += symbol
+                if symbol == '\n' and config_text != '' and  check_string.count(',') == 0:
+                    raise SyntaxError(f"Не хватает ',' после '{string}'")
                 string = ''
+
+        elif string != '' and symbol == '\n' and re.match(r'\s*([_a-zA-Z]\w*)\s*=\s*(.+?)\s*$', string, re.DOTALL)\
+              and string.count('dict') == 0 and config_text != '':
+            raise SyntaxError(f"Не хватает ',' в строке '{string}'")
         else:
             string += symbol
     return result
@@ -160,8 +180,6 @@ def parse_assignment(definition):
 
     matches = re.findall(pattern, definition)
     for name, value in matches:
-        if name == 'my_var':
-            print()
         result[name.strip()] = parse_value(value.strip())
     return result
 
@@ -202,36 +220,36 @@ def calculation(text):
             res = abs(num)
     return res
 
-# # # Пример использования:
-# file = open('example.txt', 'r', encoding='utf8')
-# # config_text = file.read()
+# # Пример использования:
+file = open('example.txt', 'r', encoding='utf8')
+# config_text = file.read()
+
+try:
+    result = parse(file)
+    print(result[1])
+    yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
+    print(yaml_data)
+except SyntaxError as e:
+    print(f"Syntax error: {e}")
+
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser(description="Парсинг файла конфигурации.")
+#     parser.add_argument("filepath", type=str, help="Путь до файла конфигурации")
 #
-# try:
-#     result = parse(file)
-#     print(result[1])
-#     yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
-#     print(yaml_data)
-# except SyntaxError as e:
-#     print(f"Syntax error: {e}")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Парсинг файла конфигурации.")
-    parser.add_argument("filepath", type=str, help="Путь до файла конфигурации")
-
-    args = parser.parse_args()
-    file_path = Path(args.filepath)
-
-    # Проверка существования файла
-    if not file_path.is_file():
-        print(f"Файл {file_path} не найден.")
-    else:
-        with file_path.open("r", encoding='utf8') as file:
-            try:
-                result = parse(file)
-                # print(result[1])
-                yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
-                for comment in comments[::-1]:
-                    yaml_data = f'# {comment} \n' + yaml_data
-                print(yaml_data)
-            except SyntaxError as e:
-                print(f"Ошибка синтаксиса: {e}")
+#     args = parser.parse_args()
+#     file_path = Path(args.filepath)
+#
+#     # Проверка существования файла
+#     if not file_path.is_file():
+#         print(f"Файл {file_path} не найден.")
+#     else:
+#         with file_path.open("r", encoding='utf8') as file:
+#             try:
+#                 result = parse(file)
+#                 # print(result[1])
+#                 yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
+#                 for comment in comments[::-1]:
+#                     yaml_data = f'# {comment} \n' + yaml_data
+#                 print(yaml_data)
+#             except SyntaxError as e:
+#                 print(f"Ошибка синтаксиса: {e}")

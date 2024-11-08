@@ -14,7 +14,7 @@ dict(
     subitem2 = dict(
         inner_item = 3,
         inner_item2 = dict(
-            new_inner_item = -5
+            new_inner_item = 5
         ),
         inner_item3 = 2,
         inner_item4 = -1
@@ -29,5 +29,8 @@ dict(
 )
 
 ^[item1 item2 +]
+^[item1 5 +]
 ^[new_inner_item abs]
+^[my_var this max]
+^[my_var 100 max]
 

@@ -1,0 +1,5 @@
+def item1 = 1;
+def item2 = item3;
+def i = dict(
+    subitem1 = 2
+)
