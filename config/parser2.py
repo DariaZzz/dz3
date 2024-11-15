@@ -221,35 +221,35 @@ def calculation(text):
     return res
 
 # # Пример использования:
-file = open('example.txt', 'r', encoding='utf8')
-# config_text = file.read()
-
-try:
-    result = parse(file)
-    print(result[1])
-    yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
-    print(yaml_data)
-except SyntaxError as e:
-    print(f"Syntax error: {e}")
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="Парсинг файла конфигурации.")
-#     parser.add_argument("filepath", type=str, help="Путь до файла конфигурации")
+# file = open('example.txt', 'r', encoding='utf8')
+# # config_text = file.read()
 #
-#     args = parser.parse_args()
-#     file_path = Path(args.filepath)
-#
-#     # Проверка существования файла
-#     if not file_path.is_file():
-#         print(f"Файл {file_path} не найден.")
-#     else:
-#         with file_path.open("r", encoding='utf8') as file:
-#             try:
-#                 result = parse(file)
-#                 # print(result[1])
-#                 yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
-#                 for comment in comments[::-1]:
-#                     yaml_data = f'# {comment} \n' + yaml_data
-#                 print(yaml_data)
-#             except SyntaxError as e:
-#                 print(f"Ошибка синтаксиса: {e}")
+# try:
+#     result = parse(file)
+#     print(result[1])
+#     yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
+#     print(yaml_data)
+# except SyntaxError as e:
+#     print(f"Syntax error: {e}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Парсинг файла конфигурации.")
+    parser.add_argument("filepath", type=str, help="Путь до файла конфигурации")
+
+    args = parser.parse_args()
+    file_path = Path(args.filepath)
+
+    # Проверка существования файла
+    if not file_path.is_file():
+        print(f"Файл {file_path} не найден.")
+    else:
+        with file_path.open("r", encoding='utf8') as file:
+            try:
+                result = parse(file)
+                # print(result[1])
+                yaml_data = yaml.dump(result[1], allow_unicode=True, default_flow_style=False)
+                for comment in comments[::-1]:
+                    yaml_data = f'# {comment} \n' + yaml_data
+                print(yaml_data)
+            except SyntaxError as e:
+                print(f"Ошибка синтаксиса: {e}")
